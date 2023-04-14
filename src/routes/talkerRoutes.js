@@ -1,31 +1,31 @@
-const express = require("express");
+const express = require('express');
 const {
   readTalkerJson,
   writeTalkerJson,
-} = require("../utils/crudFileFunctions");
-const validateAuthorization = require("../middlewares/validateAuthorization");
+} = require('../utils/crudFileFunctions');
+const validateAuthorization = require('../middlewares/validateAuthorization');
 const {
   validateTalkerFields,
   validateTalkerContents,
   validatePropertyTalkFields,
   validatePropertyTalkContents,
-} = require("../middlewares/validateTalker");
+} = require('../middlewares/validateTalker');
 
 const talkerRoutes = express.Router();
 
-talkerRoutes.get("/", async (req, res) => {
+talkerRoutes.get('/', async (req, res) => {
   const talkers = await readTalkerJson();
   return res.status(200).json(talkers);
 });
 
-talkerRoutes.get("/:id", async (req, res, next) => {
+talkerRoutes.get('/:id', async (req, res, next) => {
   const { id } = req.params;
   const talkers = await readTalkerJson();
   if (Number(id) >= 0) {
     const foundTalker = talkers.find((talker) => talker.id === Number(id));
     if (!foundTalker) {
       return res.status(404).json({
-        message: "Pessoa palestrante não encontrada",
+        message: 'Pessoa palestrante não encontrada',
       });
     }
     return res.status(200).json(foundTalker);
@@ -34,14 +34,32 @@ talkerRoutes.get("/:id", async (req, res, next) => {
   next();
 });
 
-// Usei use por enquanto aqui só pra ficar mais legível, porém tenho que saber quais rotas mais precisam dessa verificações.
+// Abaixo desse middleware serão feito as rotas que necessitam de token pra funcionar.
 talkerRoutes.use(validateAuthorization);
+
+talkerRoutes.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+  const talkers = await readTalkerJson();
+
+  const talkerPosition = talkers.findIndex(
+    (talker) => talker.id === Number(id),
+  );
+
+  talkers.splice(talkerPosition, 1);
+
+  await writeTalkerJson(talkers);
+
+  // Usei o end, pois como não ia retornar nada, somente terminei a requisição após a exclusão.
+  res.status(204).end();
+});
+
+// Abaixo desses middlewares são o que precisam da validações dos campos
 talkerRoutes.use(validateTalkerFields);
 talkerRoutes.use(validatePropertyTalkFields);
 talkerRoutes.use(validatePropertyTalkContents);
 talkerRoutes.use(validateTalkerContents);
 
-talkerRoutes.post("/", async (req, res) => {
+talkerRoutes.post('/', async (req, res) => {
   const talker = req.body;
   const talkers = await readTalkerJson();
   const newTalkers = [...talkers, { id: talkers.length + 1, ...talker }];
@@ -49,17 +67,17 @@ talkerRoutes.post("/", async (req, res) => {
   res.status(201).json({ id: talkers.length + 1, ...talker });
 });
 
-talkerRoutes.put("/:id", async (req, res) => {
+talkerRoutes.put('/:id', async (req, res) => {
   const { id } = req.params;
   const talkerEdit = req.body;
   const talkers = await readTalkerJson();
   const talkerPosition = talkers.findIndex(
-    (talker) => talker.id === Number(id)
+    (talker) => talker.id === Number(id),
   );
 
   if (talkerPosition < 0) {
     return res.status(404).json({
-      message: "Pessoa palestrante não encontrada",
+      message: 'Pessoa palestrante não encontrada',
     });
   }
 
