@@ -1,6 +1,6 @@
 const isValidEmail = require('../utils/isValidEmail');
 
-const validateFields = (req, res, next) => {
+const validateLoginFields = (req, res, next) => {
   const { email, password } = req.body;
   // Verifica se existe o campo e-mail.
   if (!email) {
@@ -18,12 +18,12 @@ const validateFields = (req, res, next) => {
   return next();
 };
 
-const validateContents = (req, res, next) => {
+const validateLoginContents = (req, res, next) => {
   const { email, password } = req.body;
-  // Verifica se o campo e-mail possui um e-mail válido.
   const isEmailOk = isValidEmail(email);
   const isPasswordOk = password.length > 5;
-
+  
+  // Verifica se o campo e-mail possui um e-mail válido.
   if (!isEmailOk) {
     return res.status(400).json({
       message: 'O "email" deve ter o formato "email@email.com"',
@@ -39,4 +39,4 @@ const validateContents = (req, res, next) => {
   return next();
 };
 
-module.exports = { validateFields, validateContents };
+module.exports = { validateLoginFields, validateLoginContents };

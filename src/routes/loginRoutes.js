@@ -1,11 +1,11 @@
 const express = require('express');
 const randomToken = require('../utils/randomToken');
-const { validateFields, validateContents } = require('../middlewares/validateLogin');
+const { validateLoginFields, validateLoginContents } = require('../middlewares/validateLogin');
 
 const loginRoutes = express.Router();
 
-loginRoutes.use(validateFields);
-loginRoutes.use(validateContents);
+loginRoutes.use(validateLoginFields);
+loginRoutes.use(validateLoginContents);
 
 loginRoutes.post('/', (req, res) => {
   // const { email, password } = req.body;
