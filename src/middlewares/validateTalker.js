@@ -1,5 +1,6 @@
-var FormatJS = require("formatjs");
-var formatJS = new FormatJS();
+const FormatJS = require('formatjs');
+
+const formatJS = new FormatJS();
 
 function validateTalkerFields(req, res, next) {
   const { name, age, talk } = req.body;
@@ -22,9 +23,9 @@ function validateTalkerFields(req, res, next) {
   return next();
 }
 
-function validatePropertyTalk(req, res, next) {
-  // Como não coube na função validateTalkerFields, fiz essa pra verificar os campos da propriedade talk que vem no body
-  // Vou verificar se os campos watchedAt e rate existem, e também juntei pra ver se são válidos, apesar de gostar separados.
+// Tive que fazer mais duas funções, pois o lint não permiti funções com mais de 20 linhas.
+function validatePropertyTalkFields(req, res, next) {
+  // Vou verificar se os campos watchedAt e rate existem
   const {
     talk: { watchedAt, rate },
   } = req.body;
@@ -35,27 +36,34 @@ function validatePropertyTalk(req, res, next) {
     });
   }
 
-  if (!rate) {
+  if (rate === undefined) {
     return res.status(400).json({
       message: 'O campo "rate" é obrigatório',
     });
   }
+  return next();
+}
 
-  const isWatchedAtOk = formatJS.test(watchedAt, "DD/MM/YYYY");
+function validatePropertyTalkContents(req, res, next) {
+  // Verifica se o a data e a nora são válidas.
+  const { talk: { watchedAt, rate } } = req.body;
+  // Uso da lib FormatJS para verificar formato de datas. link => https://www.npmjs.com/package/formatjs
+  // Verificando se a data está vindo correta no fornmato dd/mm/yyyy
+  const isWatchedAtOk = formatJS.test(watchedAt, 'DD/MM/YYYY');
   if (!isWatchedAtOk) {
     return res.status(400).json({
       message: 'O campo "watchedAt" deve ter o formato "dd/mm/aaaa"',
     });
   }
-
+  // Verifica se a nota está entre 1 e 5, e também se é um inteiro.
+  const isRateOk = Number.isInteger(rate) && Number(rate) >= 1 && Number(rate) <= 5;
+  if (!isRateOk) {
+    return res.status(400).json({
+      message: 'O campo "rate" deve ser um número inteiro entre 1 e 5',
+    });
+  }
   return next();
 }
-
-// if (!watchedAt) {
-//     return res.status(400).json({
-//       message: 'O campo "watchedAt" é obrigatório',
-//     });
-//   }
 
 function validateTalkerContents(req, res, next) {
   const { name, age } = req.body;
@@ -81,5 +89,6 @@ function validateTalkerContents(req, res, next) {
 module.exports = {
   validateTalkerContents,
   validateTalkerFields,
-  validatePropertyTalk,
+  validatePropertyTalkFields,
+  validatePropertyTalkContents,
 };
