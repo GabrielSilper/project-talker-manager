@@ -1,3 +1,6 @@
+var FormatJS = require("formatjs");
+var formatJS = new FormatJS();
+
 function validateTalkerFields(req, res, next) {
   const { name, age, talk } = req.body;
   // Verificando se todos os campos necessários estão vindo no body.
@@ -21,7 +24,7 @@ function validateTalkerFields(req, res, next) {
 
 function validatePropertyTalk(req, res, next) {
   // Como não coube na função validateTalkerFields, fiz essa pra verificar os campos da propriedade talk que vem no body
-  // Vou verificar se os campos watchedAt e rate existem.
+  // Vou verificar se os campos watchedAt e rate existem, e também juntei pra ver se são válidos, apesar de gostar separados.
   const {
     talk: { watchedAt, rate },
   } = req.body;
@@ -35,6 +38,13 @@ function validatePropertyTalk(req, res, next) {
   if (!rate) {
     return res.status(400).json({
       message: 'O campo "rate" é obrigatório',
+    });
+  }
+
+  const isWatchedAtOk = formatJS.test(watchedAt, "DD/MM/YYYY");
+  if (!isWatchedAtOk) {
+    return res.status(400).json({
+      message: 'O campo "watchedAt" deve ter o formato "dd/mm/aaaa"',
     });
   }
 
@@ -68,4 +78,8 @@ function validateTalkerContents(req, res, next) {
   return next();
 }
 
-module.exports = { validateTalkerContents, validateTalkerFields, validatePropertyTalk };
+module.exports = {
+  validateTalkerContents,
+  validateTalkerFields,
+  validatePropertyTalk,
+};
