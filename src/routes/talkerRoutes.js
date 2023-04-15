@@ -15,6 +15,7 @@ const {
   validateQuerysRate,
   validateQuerysDate,
 } = require('../middlewares/validateQuerys');
+const validatePatchRate = require('../middlewares/validatePatchRate');
 
 // Todos os imports estão acima, está linha é só pra separar um pouco e mostrar que as rotas estão abaixo.
 
@@ -69,7 +70,8 @@ talkerRoutes.delete('/:id', async (req, res) => {
 talkerRoutes.get(
   '/search',
   validateQuerysFields,
-  validateQuerysRate, validateQuerysDate,
+  validateQuerysRate,
+  validateQuerysDate,
   async (req, res) => {
     const { q, rate, date } = req.query;
     const talkers = await readTalkerJson();
@@ -91,6 +93,23 @@ talkerRoutes.get(
     return res.status(200).json(filteredTalkers);
   },
 );
+
+// Atualizar a nota de um talker existente
+talkerRoutes.patch('/rate/:id', validatePatchRate, async (req, res) => {
+  const { id } = req.params;
+  const { rate } = req.body;
+  const talkers = await readTalkerJson();
+
+  const talkerPosition = talkers.findIndex(
+    (talker) => talker.id === Number(id),
+  );
+
+  talkers[talkerPosition].talk.rate = rate;
+
+  await writeTalkerJson(talkers);
+
+  return res.status(204).end();
+});
 
 // Abaixo desses middlewares são o que precisam da validações dos campos
 talkerRoutes.use(validateTalkerFields);
