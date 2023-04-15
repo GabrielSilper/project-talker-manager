@@ -1,9 +1,12 @@
+const FormatJS = require('formatjs');
+
+const formatJS = new FormatJS();
 const { readTalkerJson } = require('../utils/crudFileFunctions');
 
 async function validateQuerysFields(req, res, next) {
-  const { q, rate } = req.query;
+  const { q, rate, date } = req.query;
   const talkers = await readTalkerJson();
-  if (!q && !rate) {
+  if (!q && !rate && !date) {
     return res.status(200).json(talkers);
   }
   return next();
@@ -22,4 +25,15 @@ function validateQuerysRate(req, res, next) {
   return next();
 }
 
-module.exports = { validateQuerysFields, validateQuerysRate };
+function validateQuerysDate(req, res, next) {
+  const { date } = req.query;
+  const isDateOk = formatJS.test(date, 'DD/MM/YYYY');
+  if (!isDateOk) {
+    return res.status(400).json({
+      message: 'O parâmetro "date" deve ter o formato "dd/mm/aaaa"',
+    });
+  }
+  return next();
+}
+
+module.exports = { validateQuerysFields, validateQuerysRate, validateQuerysDate };

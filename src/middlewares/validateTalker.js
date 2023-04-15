@@ -56,7 +56,7 @@ function validatePropertyTalkContents(req, res, next) {
     });
   }
   // Verifica se a nota está entre 1 e 5, e também se é um inteiro.
-  const isRateOk = Number.isInteger(rate) && Number(rate) >= 1 && Number(rate) <= 5;
+  const isRateOk = Number(rate) % 1 === 0 && Number(rate) >= 1 && Number(rate) <= 5;
   if (!isRateOk) {
     return res.status(400).json({
       message: 'O campo "rate" deve ser um número inteiro entre 1 e 5',
@@ -68,7 +68,7 @@ function validatePropertyTalkContents(req, res, next) {
 function validateTalkerContents(req, res, next) {
   const { name, age } = req.body;
   const isNameOk = name.length > 2;
-  const isAgeOk = Number(age) >= 18 && Number.isInteger(age);
+  const isAgeOk = Number(age) >= 18 && Number(age) % 1 === 0;
 
   // Verifica se o campo e-mail possui um nome válido.
   if (!isNameOk) {

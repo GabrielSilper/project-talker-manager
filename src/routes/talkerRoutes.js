@@ -13,6 +13,7 @@ const {
 const {
   validateQuerysFields,
   validateQuerysRate,
+  validateQuerysDate,
 } = require('../middlewares/validateQuerys');
 
 // Todos os imports estão acima, está linha é só pra separar um pouco e mostrar que as rotas estão abaixo.
@@ -64,28 +65,29 @@ talkerRoutes.delete('/:id', async (req, res) => {
 
 // Vai filtrar os talkers baseado nas minhas querys
 // Coloquei middleware para ficar mais limpo, e usei dentro da rota, pois tô cansado pra pensar uma lógica pra usar "use", já que vai afetar todos os outros.
+// Verifica se é possível filtrar pelo searchTerm, rate e date
 talkerRoutes.get(
   '/search',
   validateQuerysFields,
-  validateQuerysRate,
+  validateQuerysRate, validateQuerysDate,
   async (req, res) => {
-    const { q, rate } = req.query;
+    const { q, rate, date } = req.query;
     const talkers = await readTalkerJson();
-
     let filteredTalkers = [...talkers];
-    // Verifica se é possível filtrar por rate
     if (rate) {
       filteredTalkers = filteredTalkers.filter(
         (talker) => talker.talk.rate === Number(rate),
       );
     }
-
-    // Verifica se é possível filtrar pelo searchTerm
     if (q) {
       filteredTalkers = filteredTalkers.filter((talker) =>
         talker.name.includes(q));
     }
-
+    if (date) {
+      filteredTalkers = filteredTalkers.filter(
+        (talker) => talker.talk.watchedAt === date,
+      );
+    }
     return res.status(200).json(filteredTalkers);
   },
 );
