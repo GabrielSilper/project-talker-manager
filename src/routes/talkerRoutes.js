@@ -16,6 +16,7 @@ const {
   validateQuerysDate,
 } = require('../middlewares/validateQuerys');
 const validatePatchRate = require('../middlewares/validatePatchRate');
+const getAllTalkers = require('../db/dbQuery');
 
 // Todos os imports estão acima, está linha é só pra separar um pouco e mostrar que as rotas estão abaixo.
 
@@ -25,6 +26,12 @@ const talkerRoutes = express.Router();
 talkerRoutes.get('/', async (req, res) => {
   const talkers = await readTalkerJson();
   return res.status(200).json(talkers);
+});
+
+// Vai mostrar todos os talkers, porém vindo do banco de dados.
+talkerRoutes.get('/db', async (req, res) => {
+  const result = await getAllTalkers();
+  res.status(200).json(result);
 });
 
 // Vai mostrar um talker pelo ID.
