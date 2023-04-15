@@ -10,14 +10,22 @@ const {
   validatePropertyTalkFields,
   validatePropertyTalkContents,
 } = require('../middlewares/validateTalker');
+const {
+  validateQuerysFields,
+  validateQuerysRate,
+} = require('../middlewares/validateQuerys');
+
+// Todos os imports estão acima, está linha é só pra separar um pouco e mostrar que as rotas estão abaixo.
 
 const talkerRoutes = express.Router();
 
+// Vai mostrar todos os talkers.
 talkerRoutes.get('/', async (req, res) => {
   const talkers = await readTalkerJson();
   return res.status(200).json(talkers);
 });
 
+// Vai mostrar um talker pelo ID.
 talkerRoutes.get('/:id', async (req, res, next) => {
   const { id } = req.params;
   const talkers = await readTalkerJson();
@@ -37,6 +45,7 @@ talkerRoutes.get('/:id', async (req, res, next) => {
 // Abaixo desse middleware serão feito as rotas que necessitam de token pra funcionar.
 talkerRoutes.use(validateAuthorization);
 
+// Vai deletar um talker
 talkerRoutes.delete('/:id', async (req, res) => {
   const { id } = req.params;
   const talkers = await readTalkerJson();
@@ -53,18 +62,33 @@ talkerRoutes.delete('/:id', async (req, res) => {
   res.status(204).end();
 });
 
-talkerRoutes.get('/search', async (req, res) => {
-  const { q } = req.query;
-  const talkers = await readTalkerJson();
+// Vai filtrar os talkers baseado nas minhas querys
+// Coloquei middleware para ficar mais limpo, e usei dentro da rota, pois tô cansado pra pensar uma lógica pra usar "use", já que vai afetar todos os outros.
+talkerRoutes.get(
+  '/search',
+  validateQuerysFields,
+  validateQuerysRate,
+  async (req, res) => {
+    const { q, rate } = req.query;
+    const talkers = await readTalkerJson();
 
-  if (!q) {
-    return res.status(200).json(talkers);
-  }
+    let filteredTalkers = [...talkers];
+    // Verifica se é possível filtrar por rate
+    if (rate) {
+      filteredTalkers = filteredTalkers.filter(
+        (talker) => talker.talk.rate === Number(rate),
+      );
+    }
 
-  const result = talkers.filter((talker) => talker.name.includes(q));
+    // Verifica se é possível filtrar pelo searchTerm
+    if (q) {
+      filteredTalkers = filteredTalkers.filter((talker) =>
+        talker.name.includes(q));
+    }
 
-  return res.status(200).json(result);
-});
+    return res.status(200).json(filteredTalkers);
+  },
+);
 
 // Abaixo desses middlewares são o que precisam da validações dos campos
 talkerRoutes.use(validateTalkerFields);
@@ -72,6 +96,7 @@ talkerRoutes.use(validatePropertyTalkFields);
 talkerRoutes.use(validatePropertyTalkContents);
 talkerRoutes.use(validateTalkerContents);
 
+// Vai cadastrar um novo talker
 talkerRoutes.post('/', async (req, res) => {
   const talker = req.body;
   const talkers = await readTalkerJson();
@@ -80,6 +105,7 @@ talkerRoutes.post('/', async (req, res) => {
   res.status(201).json({ id: talkers.length + 1, ...talker });
 });
 
+// Vai atualizar um talker existente
 talkerRoutes.put('/:id', async (req, res) => {
   const { id } = req.params;
   const talkerEdit = req.body;
