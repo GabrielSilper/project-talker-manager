@@ -29,4 +29,16 @@ async function deleteTalkerJson(id) {
   await writeTalkerJson(talkers);
 }
 
-module.exports = { readTalkerJson, writeTalkerJson, addTalkerJson, deleteTalkerJson };
+async function getTalkerJson(id) {
+  const talkers = await readTalkerJson();
+  const foundTalker = talkers.find((talker) => talker.id === Number(id));
+  return foundTalker;
+}
+
+module.exports = {
+  readTalkerJson,
+  writeTalkerJson,
+  addTalkerJson,
+  deleteTalkerJson,
+  getTalkerJson,
+};

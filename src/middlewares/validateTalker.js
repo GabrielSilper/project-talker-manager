@@ -1,4 +1,5 @@
 const FormatJS = require('formatjs');
+const { readTalkerJson } = require('../utils/crudFileFunctions');
 
 const formatJS = new FormatJS();
 
@@ -45,17 +46,16 @@ function validatePropertyTalkFields(req, res, next) {
 }
 
 function validatePropertyTalkContents(req, res, next) {
-  // Verifica se o a data e a nora são válidas.
-  const { talk: { watchedAt, rate } } = req.body;
-  // Uso da lib FormatJS para verificar formato de datas. link => https://www.npmjs.com/package/formatjs
-  // Verificando se a data está vindo correta no fornmato dd/mm/yyyy
+  const {
+    talk: { watchedAt, rate },
+  } = req.body;
   const isWatchedAtOk = formatJS.test(watchedAt, 'DD/MM/YYYY');
   if (!isWatchedAtOk) {
     return res.status(400).json({
       message: 'O campo "watchedAt" deve ter o formato "dd/mm/aaaa"',
     });
   }
-  // Verifica se a nota está entre 1 e 5, e também se é um inteiro.
+
   const isRateOk = Number(rate) % 1 === 0 && Number(rate) >= 1 && Number(rate) <= 5;
   if (!isRateOk) {
     return res.status(400).json({
@@ -86,9 +86,22 @@ function validateTalkerContents(req, res, next) {
   return next();
 }
 
+async function validateTalkerId(req, res, next) {
+  const { id } = req.params;
+  const talkers = await readTalkerJson();
+  const foundTalker = talkers.find((talker) => talker.id === Number(id));
+  if (Number(id) >= 0 && !foundTalker) {
+    return res.status(404).json({
+      message: 'Pessoa palestrante não encontrada',
+    });
+  }
+  return next();
+}
+
 module.exports = {
   validateTalkerContents,
   validateTalkerFields,
   validatePropertyTalkFields,
   validatePropertyTalkContents,
+  validateTalkerId,
 };

@@ -4,6 +4,7 @@ const {
   writeTalkerJson,
   addTalkerJson,
   deleteTalkerJson,
+  getTalkerJson,
 } = require('../utils/crudFileFunctions');
 const validateAuthorization = require('../middlewares/validateAuthorization');
 const {
@@ -11,6 +12,7 @@ const {
   validateTalkerContents,
   validatePropertyTalkFields,
   validatePropertyTalkContents,
+  validateTalkerId,
 } = require('../middlewares/validateTalker');
 const {
   validateQuerysFields,
@@ -37,19 +39,12 @@ talkerRoutes.get('/db', async (req, res) => {
 });
 
 // Vai mostrar um talker pelo ID.
-talkerRoutes.get('/:id', async (req, res, next) => {
+talkerRoutes.get('/:id', validateTalkerId, async (req, res, next) => {
   const { id } = req.params;
-  const talkers = await readTalkerJson();
   if (Number(id) >= 0) {
-    const foundTalker = talkers.find((talker) => talker.id === Number(id));
-    if (!foundTalker) {
-      return res.status(404).json({
-        message: 'Pessoa palestrante não encontrada',
-      });
-    }
+    const foundTalker = await getTalkerJson(id);
     return res.status(200).json(foundTalker);
   }
-  // Usei o next por causa da rota "/talkers/search", esse é o porquê de ter um condição nesse trecho, para diferenciar quando for passado um id.
   return next();
 });
 
@@ -124,20 +119,13 @@ talkerRoutes.post('/', async (req, res) => {
 });
 
 // Vai atualizar um talker existente
-talkerRoutes.put('/:id', async (req, res) => {
+talkerRoutes.put('/:id', validateTalkerId, async (req, res) => {
   const { id } = req.params;
   const talkerEdit = req.body;
   const talkers = await readTalkerJson();
   const talkerPosition = talkers.findIndex(
     (talker) => talker.id === Number(id),
   );
-
-  if (talkerPosition < 0) {
-    return res.status(404).json({
-      message: 'Pessoa palestrante não encontrada',
-    });
-  }
-
   talkers[talkerPosition] = { id: Number(id), ...talkerEdit };
 
   await writeTalkerJson(talkers);
