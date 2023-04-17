@@ -20,4 +20,13 @@ async function addTalkerJson(talker) {
   return { id: talkers.length + 1, ...talker };
 }
 
-module.exports = { readTalkerJson, writeTalkerJson, addTalkerJson };
+async function deleteTalkerJson(id) {
+  const talkers = await readTalkerJson();
+  const talkerPosition = talkers.findIndex(
+    (talker) => talker.id === Number(id),
+  );
+  talkers.splice(talkerPosition, 1);
+  await writeTalkerJson(talkers);
+}
+
+module.exports = { readTalkerJson, writeTalkerJson, addTalkerJson, deleteTalkerJson };

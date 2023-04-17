@@ -3,6 +3,7 @@ const {
   readTalkerJson,
   writeTalkerJson,
   addTalkerJson,
+  deleteTalkerJson,
 } = require('../utils/crudFileFunctions');
 const validateAuthorization = require('../middlewares/validateAuthorization');
 const {
@@ -58,17 +59,7 @@ talkerRoutes.use(validateAuthorization);
 // Vai deletar um talker
 talkerRoutes.delete('/:id', async (req, res) => {
   const { id } = req.params;
-  const talkers = await readTalkerJson();
-
-  const talkerPosition = talkers.findIndex(
-    (talker) => talker.id === Number(id),
-  );
-
-  talkers.splice(talkerPosition, 1);
-
-  await writeTalkerJson(talkers);
-
-  // Usei o end, pois como não ia retornar nada, somente terminei a requisição após a exclusão.
+  deleteTalkerJson(id);
   res.status(204).end();
 });
 
