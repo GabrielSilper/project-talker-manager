@@ -128,7 +128,7 @@ talkerRoutes.use(validateTalkerContents);
 // Vai cadastrar um novo talker
 talkerRoutes.post('/', async (req, res) => {
   const talker = req.body;
-  const newTalker = await addTalkerJson(talker)
+  const newTalker = await addTalkerJson(talker);
   res.status(201).json(newTalker);
 });
 
