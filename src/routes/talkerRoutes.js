@@ -2,6 +2,7 @@ const express = require('express');
 const {
   readTalkerJson,
   writeTalkerJson,
+  addTalkerJson,
 } = require('../utils/crudFileFunctions');
 const validateAuthorization = require('../middlewares/validateAuthorization');
 const {
@@ -127,10 +128,8 @@ talkerRoutes.use(validateTalkerContents);
 // Vai cadastrar um novo talker
 talkerRoutes.post('/', async (req, res) => {
   const talker = req.body;
-  const talkers = await readTalkerJson();
-  const newTalkers = [...talkers, { id: talkers.length + 1, ...talker }];
-  await writeTalkerJson(newTalkers);
-  res.status(201).json({ id: talkers.length + 1, ...talker });
+  const newTalker = await addTalkerJson(talker)
+  res.status(201).json(newTalker);
 });
 
 // Vai atualizar um talker existente
