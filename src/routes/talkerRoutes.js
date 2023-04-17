@@ -6,6 +6,7 @@ const {
   deleteTalkerJson,
   getTalkerJson,
   filterTalkerJson,
+  updateRateJson,
 } = require('../utils/crudFileFunctions');
 const validateAuthorization = require('../middlewares/validateAuthorization');
 const {
@@ -55,13 +56,11 @@ talkerRoutes.use(validateAuthorization);
 // Vai deletar um talker
 talkerRoutes.delete('/:id', async (req, res) => {
   const { id } = req.params;
-  deleteTalkerJson(id);
+  await deleteTalkerJson(id);
   res.status(204).end();
 });
 
 // Vai filtrar os talkers baseado nas minhas querys
-// Coloquei middleware para ficar mais limpo, e usei dentro da rota, pois tô cansado pra pensar uma lógica pra usar "use", já que vai afetar todos os outros.
-// Verifica se é possível filtrar pelo searchTerm, rate e date
 const midArray = [validateQuerysFields, validateQuerysRate, validateQuerysDate];
 talkerRoutes.get('/search', midArray, async (req, res) => {
   const filteredTalkers = await filterTalkerJson(req.query);
@@ -72,16 +71,7 @@ talkerRoutes.get('/search', midArray, async (req, res) => {
 talkerRoutes.patch('/rate/:id', validatePatchRate, async (req, res) => {
   const { id } = req.params;
   const { rate } = req.body;
-  const talkers = await readTalkerJson();
-
-  const talkerPosition = talkers.findIndex(
-    (talker) => talker.id === Number(id),
-  );
-
-  talkers[talkerPosition].talk.rate = rate;
-
-  await writeTalkerJson(talkers);
-
+  await updateRateJson(id, rate);
   return res.status(204).end();
 });
 
