@@ -5,7 +5,6 @@ const formatJS = new FormatJS();
 
 function validateTalkerFields(req, res, next) {
   const { name, age, talk } = req.body;
-  // Verificando se todos os campos necessários estão vindo no body.
   if (!name) {
     return res.status(400).json({
       message: 'O campo "name" é obrigatório',
@@ -24,9 +23,7 @@ function validateTalkerFields(req, res, next) {
   return next();
 }
 
-// Tive que fazer mais duas funções, pois o lint não permiti funções com mais de 20 linhas.
 function validatePropertyTalkFields(req, res, next) {
-  // Vou verificar se os campos watchedAt e rate existem
   const {
     talk: { watchedAt, rate },
   } = req.body;
@@ -70,19 +67,16 @@ function validateTalkerContents(req, res, next) {
   const isNameOk = name.length > 2;
   const isAgeOk = Number(age) >= 18 && Number(age) % 1 === 0;
 
-  // Verifica se o campo e-mail possui um nome válido.
   if (!isNameOk) {
     return res.status(400).json({
       message: 'O "name" deve ter pelo menos 3 caracteres',
     });
   }
-  // Verifica se existe o campo age.
   if (!isAgeOk) {
     return res.status(400).json({
       message: 'O campo "age" deve ser um número inteiro igual ou maior que 18',
     });
   }
-  // Caso tudo esteja certo, vai para o próximo middleware.
   return next();
 }
 

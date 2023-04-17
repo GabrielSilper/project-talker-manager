@@ -24,23 +24,18 @@ const {
 const validatePatchRate = require('../middlewares/validatePatchRate');
 const getAllTalkers = require('../db/dbQuery');
 
-// Todos os imports estão acima, está linha é só pra separar um pouco e mostrar que as rotas estão abaixo.
-
 const talkerRoutes = express.Router();
 
-// Vai mostrar todos os talkers.
 talkerRoutes.get('/', async (req, res) => {
   const talkers = await readTalkerJson();
   return res.status(200).json(talkers);
 });
 
-// Vai mostrar todos os talkers, porém vindo do banco de dados.
 talkerRoutes.get('/db', async (req, res) => {
   const result = await getAllTalkers();
   return res.status(200).json(result);
 });
 
-// Vai mostrar um talker pelo ID.
 talkerRoutes.get('/:id', validateTalkerId, async (req, res, next) => {
   const { id } = req.params;
   if (Number(id) >= 0) {
@@ -50,24 +45,20 @@ talkerRoutes.get('/:id', validateTalkerId, async (req, res, next) => {
   return next();
 });
 
-// Abaixo desse middleware serão feito as rotas que necessitam de token pra funcionar.
 talkerRoutes.use(validateAuthorization);
 
-// Vai deletar um talker
 talkerRoutes.delete('/:id', async (req, res) => {
   const { id } = req.params;
   await deleteTalkerJson(id);
   return res.status(204).end();
 });
 
-// Vai filtrar os talkers baseado nas minhas querys
 const midArray = [validateQuerysFields, validateQuerysRate, validateQuerysDate];
 talkerRoutes.get('/search', midArray, async (req, res) => {
   const filteredTalkers = await filterTalkerJson(req.query);
   return res.status(200).json(filteredTalkers);
 });
 
-// Atualizar a nota de um talker existente
 talkerRoutes.patch('/rate/:id', validatePatchRate, async (req, res) => {
   const { id } = req.params;
   const { rate } = req.body;
@@ -75,20 +66,17 @@ talkerRoutes.patch('/rate/:id', validatePatchRate, async (req, res) => {
   return res.status(204).end();
 });
 
-// Abaixo desses middlewares são o que precisam da validações dos campos
 talkerRoutes.use(validateTalkerFields);
 talkerRoutes.use(validatePropertyTalkFields);
 talkerRoutes.use(validatePropertyTalkContents);
 talkerRoutes.use(validateTalkerContents);
 
-// Vai cadastrar um novo talker
 talkerRoutes.post('/', async (req, res) => {
   const talker = req.body;
   const newTalker = await addTalkerJson(talker);
   return res.status(201).json(newTalker);
 });
 
-// Vai atualizar um talker existente
 talkerRoutes.put('/:id', validateTalkerId, async (req, res) => {
   const { id } = req.params;
   const talkerEdit = req.body;
