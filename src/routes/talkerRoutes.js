@@ -5,6 +5,7 @@ const {
   addTalkerJson,
   deleteTalkerJson,
   getTalkerJson,
+  filterTalkerJson,
 } = require('../utils/crudFileFunctions');
 const validateAuthorization = require('../middlewares/validateAuthorization');
 const {
@@ -61,32 +62,11 @@ talkerRoutes.delete('/:id', async (req, res) => {
 // Vai filtrar os talkers baseado nas minhas querys
 // Coloquei middleware para ficar mais limpo, e usei dentro da rota, pois tô cansado pra pensar uma lógica pra usar "use", já que vai afetar todos os outros.
 // Verifica se é possível filtrar pelo searchTerm, rate e date
-talkerRoutes.get(
-  '/search',
-  validateQuerysFields,
-  validateQuerysRate,
-  validateQuerysDate,
-  async (req, res) => {
-    const { q, rate, date } = req.query;
-    const talkers = await readTalkerJson();
-    let filteredTalkers = [...talkers];
-    if (rate) {
-      filteredTalkers = filteredTalkers.filter(
-        (talker) => talker.talk.rate === Number(rate),
-      );
-    }
-    if (q) {
-      filteredTalkers = filteredTalkers.filter((talker) =>
-        talker.name.includes(q));
-    }
-    if (date) {
-      filteredTalkers = filteredTalkers.filter(
-        (talker) => talker.talk.watchedAt === date,
-      );
-    }
-    return res.status(200).json(filteredTalkers);
-  },
-);
+const midArray = [validateQuerysFields, validateQuerysRate, validateQuerysDate];
+talkerRoutes.get('/search', midArray, async (req, res) => {
+  const filteredTalkers = await filterTalkerJson(req.query);
+  return res.status(200).json(filteredTalkers);
+});
 
 // Atualizar a nota de um talker existente
 talkerRoutes.patch('/rate/:id', validatePatchRate, async (req, res) => {

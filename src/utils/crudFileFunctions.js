@@ -35,10 +35,31 @@ async function getTalkerJson(id) {
   return foundTalker;
 }
 
+async function filterTalkerJson(querys) {
+  const talkers = await readTalkerJson();
+  let filteredTalkers = [...talkers];
+  if (querys.rate) {
+    filteredTalkers = filteredTalkers.filter(
+      (talker) => talker.talk.rate === Number(querys.rate),
+    );
+  }
+  if (querys.q) {
+    filteredTalkers = filteredTalkers.filter((talker) =>
+      talker.name.includes(querys.q));
+  }
+  if (querys.date) {
+    filteredTalkers = filteredTalkers.filter(
+      (talker) => talker.talk.watchedAt === querys.date,
+    );
+  }
+  return filteredTalkers;
+}
+
 module.exports = {
   readTalkerJson,
   writeTalkerJson,
   addTalkerJson,
   deleteTalkerJson,
   getTalkerJson,
+  filterTalkerJson,
 };
