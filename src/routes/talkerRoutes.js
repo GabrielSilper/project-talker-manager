@@ -1,12 +1,12 @@
 const express = require('express');
 const {
   readTalkerJson,
-  writeTalkerJson,
   addTalkerJson,
   deleteTalkerJson,
   getTalkerJson,
   filterTalkerJson,
   updateRateJson,
+  updateTalkerJson,
 } = require('../utils/crudFileFunctions');
 const validateAuthorization = require('../middlewares/validateAuthorization');
 const {
@@ -37,7 +37,7 @@ talkerRoutes.get('/', async (req, res) => {
 // Vai mostrar todos os talkers, porém vindo do banco de dados.
 talkerRoutes.get('/db', async (req, res) => {
   const result = await getAllTalkers();
-  res.status(200).json(result);
+  return res.status(200).json(result);
 });
 
 // Vai mostrar um talker pelo ID.
@@ -57,7 +57,7 @@ talkerRoutes.use(validateAuthorization);
 talkerRoutes.delete('/:id', async (req, res) => {
   const { id } = req.params;
   await deleteTalkerJson(id);
-  res.status(204).end();
+  return res.status(204).end();
 });
 
 // Vai filtrar os talkers baseado nas minhas querys
@@ -85,22 +85,15 @@ talkerRoutes.use(validateTalkerContents);
 talkerRoutes.post('/', async (req, res) => {
   const talker = req.body;
   const newTalker = await addTalkerJson(talker);
-  res.status(201).json(newTalker);
+  return res.status(201).json(newTalker);
 });
 
 // Vai atualizar um talker existente
 talkerRoutes.put('/:id', validateTalkerId, async (req, res) => {
   const { id } = req.params;
   const talkerEdit = req.body;
-  const talkers = await readTalkerJson();
-  const talkerPosition = talkers.findIndex(
-    (talker) => talker.id === Number(id),
-  );
-  talkers[talkerPosition] = { id: Number(id), ...talkerEdit };
-
-  await writeTalkerJson(talkers);
-
-  res.status(200).json({ id: Number(id), ...talkerEdit });
+  const newTalker = await updateTalkerJson(id, talkerEdit);
+  return res.status(200).json(newTalker);
 });
 
 module.exports = talkerRoutes;

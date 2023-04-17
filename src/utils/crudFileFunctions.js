@@ -55,6 +55,16 @@ async function filterTalkerJson(querys) {
   return filteredTalkers;
 }
 
+async function updateTalkerJson(id, talkerEdit) {
+  const talkers = await readTalkerJson();
+  const talkerPosition = talkers.findIndex(
+    (talker) => talker.id === Number(id),
+  );
+  talkers[talkerPosition] = { id: Number(id), ...talkerEdit };
+  await writeTalkerJson(talkers);
+  return { id: Number(id), ...talkerEdit };
+}
+
 async function updateRateJson(id, rate) {
   const talkers = await readTalkerJson();
   const talkerPosition = talkers.findIndex(
@@ -71,5 +81,6 @@ module.exports = {
   deleteTalkerJson,
   getTalkerJson,
   filterTalkerJson,
+  updateTalkerJson,
   updateRateJson,
 };
